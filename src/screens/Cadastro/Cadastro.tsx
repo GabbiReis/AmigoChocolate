@@ -1,10 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import UserService from '../../service/UserService/UserService'
+import { User } from '../../types/User';
 
 const Cadastro = () => {
   const navigation = useNavigation<StackTypes>();
@@ -35,23 +36,24 @@ const Cadastro = () => {
       setProfileImage(result.assets[0].uri);
     }
   };
-  const handleCadastro = async (nome: string, email: string, senha: string) => {
+  const cadastrarUsuario = async () => {
     try {
-      const user = {
-        Nome: nome,
-        Email: email,
-        Senha: senha,
-      };
-  
-      const userAdded = await userService.cadastrarUser(user);
-      if (userAdded) {
-        console.log('Usuário cadastrado com sucesso!');
-        navigation.navigate('Login'); // Redirecionar para a tela de login após o cadastro
+      // Cria um objeto de usuário com os dados do formulário
+      const user: User = { Nome: nome, Email: email, Senha: senha };
+
+      // Chama o método para cadastrar o usuário
+      const cadastradoComSucesso = await userService.cadastrarUser(user);
+
+      if (cadastradoComSucesso) {
+        // Usuário cadastrado com sucesso
+        alert('Usuário cadastrado com sucesso!');
       } else {
-        console.log('Erro ao cadastrar usuário');
+        // Falha ao cadastrar usuário
+        alert('Erro ao cadastrar usuário. Por favor, tente novamente mais tarde.');
       }
     } catch (error) {
       console.error('Erro ao cadastrar usuário:', error);
+      alert('Erro ao cadastrar usuário. Por favor, tente novamente mais tarde.');
     }
   };
 
@@ -106,7 +108,7 @@ const Cadastro = () => {
             value={senha}
           />
         </View>
-        <TouchableOpacity style={styles.loginButton} onPress={() => handleCadastro(nome, email, senha)}>
+        <TouchableOpacity style={styles.loginButton} onPress={() => cadastrarUsuario()}>
           <Text style={styles.loginText}>Cadastrar</Text>
         </TouchableOpacity>
         <View style={styles.registerContainer}>

@@ -19,48 +19,50 @@ const PaginaInicial = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar/>
-      <Image style={styles.background} source={require('../../../assets/images/Choco_GABI.svg')} />
-      <View style={styles.header}>
-        {/* Ícone de perfil */}
-        <TouchableOpacity>
-          <Image style={styles.profileImage} source={require('../../../assets/images/Icon.svg')} />
-        </TouchableOpacity>
-        {/* Logo */}
-        <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
-        <TouchableOpacity onPress={toggleNavbar}> {/* Altera a visibilidade da barra de navegação */}
-          <Text style={styles.headerText}>Menu</Text>
-        </TouchableOpacity>
-      </View>
-      {navbarVisible && ( // Renderiza a barra de navegação somente se navbarVisible for verdadeiro
-        <View style={styles.navbar}>
+    <>
+      <StatusBar hidden />
+      <View style={styles.container}>
+        <Image style={styles.background} source={require('../../../assets/images/Choco_GABI.svg')} />
+        <View style={styles.header}>
+          {/* Ícone de perfil */}
           <TouchableOpacity>
-            <Text style={styles.navItem}>Perfil</Text>
+            <Image style={styles.profileImage} source={require('../../../assets/images/Icon.svg')} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => { navigation.navigate('PaginaInicial'); }}>
-            <Text style={styles.navItem} >Meus Grupos</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.navItem}>Sobre</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Inicio')}>
-            <Text style={styles.navItem} >Sair</Text>
+          {/* Logo */}
+          <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
+          <TouchableOpacity onPress={toggleNavbar}> {/* Altera a visibilidade da barra de navegação */}
+            <Text style={styles.headerText}>Menu</Text>
           </TouchableOpacity>
         </View>
-      )}
-      <View style={styles.content}>
-        <Text style={styles.welcomeText}>Bem-vindo!</Text>
-        <View style={styles.groupContainer}>
-          <Text style={styles.groupText} onPress={() => { navigation.navigate('DetalhesGrupo'); }}>Grupo 1</Text>
-          <Text style={styles.groupText}>Grupo 2</Text>
-          <Text style={styles.groupText}>Grupo 3</Text>
-          <TouchableOpacity onPress={() => { navigation.navigate('CriarGrupo'); }}>
-            <AntDesign name="pluscircleo" size={24} color="black" />
-          </TouchableOpacity>
+        {navbarVisible && ( // Renderiza a barra de navegação somente se navbarVisible for verdadeiro
+          <View style={styles.navbar}>
+            <TouchableOpacity>
+              <Text style={styles.navItem}>Perfil</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { navigation.navigate('PaginaInicial'); }}>
+              <Text style={styles.navItem} >Meus Grupos</Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.navItem}>Sobre</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Inicio')}>
+              <Text style={styles.navItem} >Sair</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.content}>
+          <Text style={styles.welcomeText}>Bem-vindo!</Text>
+          <View style={styles.groupContainer}>
+            <Text style={styles.groupText} onPress={() => { navigation.navigate('DetalhesGrupo'); }}>Grupo 1</Text>
+            <Text style={styles.groupText}>Grupo 2</Text>
+            <Text style={styles.groupText}>Grupo 3</Text>
+            <TouchableOpacity onPress={() => { navigation.navigate('CriarGrupo'); }}>
+              <AntDesign name="pluscircleo" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
+    </>
   );
 };
 
