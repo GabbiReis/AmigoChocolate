@@ -16,9 +16,6 @@ const Login = () => {
   const navigation = useNavigation<StackTypes>();
 
 
-
-
-
   return (
     <View style={styles.container}>
       <StatusBar style='light' />

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackTypes } from '../../routes/stack';
+import * as ImagePicker from 'expo-image-picker';
 import axios, { AxiosResponse } from 'axios';
 
 
 const CriarGrupo= () => {
   const [nomeGrupo, setNomeGrupo] = useState<string>('');
   const [maxParticipantes, setMaxParticipantes] = useState<string>('');
+  const [profileImageIcon, setProfileImage] = useState<string | null>(null);
   const [valor, setValor] = useState<string>('');
   const [dataRevelacao, setDataRevelacao] = useState<string>('');
   const [descricao, setDescricao] = useState<string>('');
@@ -34,7 +36,26 @@ const CriarGrupo= () => {
         console.error('Erro ao salvar o grupo:', error);
         alert('Ocorreu um erro ao salvar o grupo. Por favor, tente novamente mais tarde.');
     }
+  };
 
+  const selectImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Desculpe, precisamos da permissão da câmera para continuar!');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
   };
 
   return (
@@ -43,8 +64,9 @@ const CriarGrupo= () => {
       <View style={styles.header}>
         {/* Ícone de perfil */}
         <TouchableOpacity>
-          <Image style={styles.profileImage} source={require('../../../assets/images/Icon.svg')} />
+          <Image style={styles.profileImageIcon} source={require('../../../assets/images/Icon.svg')} />
         </TouchableOpacity>
+
         {/* Logo */}
         <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -53,7 +75,15 @@ const CriarGrupo= () => {
       </View>
       <View style={styles.content}>
         <Text style={styles.welcomeText}>Criar Grupo</Text>
+
         <View style={styles.groupContainer}>
+         {/* Adicionar icone */}
+          <TouchableOpacity onPress={selectImage}>
+            <Text style={styles.input}>Adicionar Icone do Grupo</Text>
+          </TouchableOpacity>
+          {profileImageIcon && (
+            <Image style={styles.profileImageIcon} source={{ uri: profileImageIcon}} />
+          )}
           <TextInput
             placeholder="Nome do Grupo"
             style={styles.input}
@@ -169,6 +199,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  profileImageIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
   },
 });
 

@@ -45,17 +45,20 @@ const PaginaInicial = () => {
             <TouchableOpacity>
               <Text style={styles.navItem}>Sobre</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Inicio')}>
-              <Text style={styles.navItem} >Sair</Text>
+            <TouchableOpacity onPress={() => {navigation.popToTop()}}>
+            <Text style={styles.navItem}>Sair</Text>
             </TouchableOpacity>
           </View>
         )}
         <View style={styles.content}>
           <Text style={styles.welcomeText}>Bem-vindo!</Text>
-          <View style={styles.groupContainer}>
-            <Text style={styles.groupText} onPress={() => { navigation.navigate('DetalhesGrupo'); }}>Grupo 1</Text>
-            <Text style={styles.groupText}>Grupo 2</Text>
-            <Text style={styles.groupText}>Grupo 3</Text>
+          <View style={styles.groupContainer} >
+            <TouchableOpacity style={styles.contentGroupText} onPress={() => { navigation.navigate('DetalhesGrupo'); }}>
+            <Text style={styles.groupText} >Grupo 1</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.contentGroupText} onPress={() => { navigation.navigate('DetalhesGrupo'); }}>
+            <Text style={styles.groupText} >Grupo 2</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => { navigation.navigate('CriarGrupo'); }}>
               <AntDesign name="pluscircleo" size={24} color="black" />
             </TouchableOpacity>
@@ -114,9 +117,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     alignItems: 'center',
+    width: '80%',
+  },
+  contentGroupText: {
+    backgroundColor: 'rgba(100, 62, 42, 0.80)',
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+    marginBottom: 10, // Add margin-bottom for spacing
+    width: '100%',
   },
   groupText: {
-    color: 'black',
+    color: 'white',
     fontSize: 18,
     marginBottom: 10,
   },
