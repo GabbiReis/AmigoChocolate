@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 20,
     },
     buttonText: {
-      color: 'black',
+      color: 'white',
       fontSize: 16,
       fontWeight: 'bold',
       textAlign: 'center',

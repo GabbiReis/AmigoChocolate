@@ -1,98 +1,160 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackTypes } from '../../routes/stack';
-import axios, { AxiosResponse } from 'axios';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import GrupoService from '../../service/GrupoService/GrupoService';
+import { Grupo } from '../../types/Grupo';
+import { ImageSourcePropType } from 'react-native';
+import UserService from '../../service/UserService/UserService';
 
-
-const CriarGrupo= () => {
-  const [nomeGrupo, setNomeGrupo] = useState<string>('');
-  const [maxParticipantes, setMaxParticipantes] = useState<string>('');
-  const [valor, setValor] = useState<string>('');
-  const [dataRevelacao, setDataRevelacao] = useState<string>('');
+const CriarGrupo = () => {
+  const [nomeGrupo, setNomeGrupo] = useState('');
+  const [maxParticipantes, setMaxParticipantes] = useState<number>(0);
+  const [profileImageIcon, setProfileImage] = useState<string | null>(null);
+  const [valor, setValor] = useState<number | null>(null);
+  const [dataRevelacao, setDataRevelacao] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [descricao, setDescricao] = useState<string>('');
+  const [grupoService, setGrupoService] = useState<GrupoService | null>(null);
 
   const navigation = useNavigation<StackTypes>();
+  const userService = new UserService();
+
+  useEffect(() => {
+    const token = userService.getToken();
+    if (token) {
+      setGrupoService(new GrupoService(token));
+    }
+  }, []);
 
   const salvarGrupo = async () => {
-    try {
-        // Enviar os dados do grupo para o servidor
-        const response = await axios.post('http://endereco-do-seu-backend/api/Grupos', {
-          nome: nomeGrupo,
-          maxParticipantes,
-          valor,
-          dataRevelacao,
-          descricao
-        });
-        
-        // Verificar se o grupo foi salvo com sucesso
-        if (response.status === 201) {
-          // Grupo salvo com sucesso, redirecionar para a página inicial ou outra página
-          navigation.navigate('PaginaInicial');
-        }
-      } catch (error) {
-        console.error('Erro ao salvar o grupo:', error);
-        alert('Ocorreu um erro ao salvar o grupo. Por favor, tente novamente mais tarde.');
+    if (!grupoService) {
+      console.error('Erro: serviço de grupo não está disponível.');
+      return;
     }
 
+    try {
+      const grupo: Grupo = {
+        Nome: nomeGrupo,
+        QuantidadeMaxParticipantes: maxParticipantes,
+        Valor: valor || 0,
+        DataRevelacao: dataRevelacao,
+        Descricao: descricao,
+        Icone: profileImageIcon as ImageSourcePropType
+      };
+
+      const sucesso = await grupoService.criarGrupo(grupo);
+
+      if (sucesso) {
+        navigation.navigate('PaginaInicial');
+      } else {
+        throw new Error('Não foi possível criar o grupo. Por favor, tente novamente mais tarde.');
+      }
+    } catch (error) {
+      console.error('Erro ao criar o grupo:', error);
+    }
+  };
+
+  const selectImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Desculpe, precisamos da permissão da câmera para continuar!');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const formatarValor = (valor: number | null) => {
+    if (valor === null) return '';
+    return `R$ ${valor.toFixed(2)}`;
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || dataRevelacao;
+    setShowDatePicker(false);
+    setDataRevelacao(currentDate);
   };
 
   return (
     <View style={styles.container}>
       <Image style={styles.background} source={require('../../../assets/images/Choco_GABI.svg')} />
       <View style={styles.header}>
-        {/* Ícone de perfil */}
         <TouchableOpacity>
-          <Image style={styles.profileImage} source={require('../../../assets/images/Icon.svg')} />
+          <Image style={styles.profileImageIcon} source={require('../../../assets/images/Icon.svg')} />
         </TouchableOpacity>
-        {/* Logo */}
         <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.headerText}>Voltar</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.content}>
-        <Text style={styles.welcomeText}>Criar Grupo</Text>
-        <View style={styles.groupContainer}>
-          <TextInput
-            placeholder="Nome do Grupo"
-            style={styles.input}
-            value={nomeGrupo}
-            onChangeText={setNomeGrupo}
-          />
-          <TextInput
-            placeholder="Máximo de Participantes"
-            style={styles.input}
-            value={maxParticipantes}
-            onChangeText={setMaxParticipantes}
-            keyboardType="numeric"
-          />
-          <TextInput
-            placeholder="Valor"
-            style={styles.input}
-            value={valor}
-            onChangeText={setValor}
-            keyboardType="numeric"
-          />
-          <TextInput
-            placeholder="Data da Revelação"
-            style={styles.input}
-            value={dataRevelacao}
-            onChangeText={setDataRevelacao}
-            keyboardType="numeric"
-          />
-          <TextInput
-            placeholder="Descrição"
-            style={[styles.input, styles.textarea]}
-            value={descricao}
-            onChangeText={setDescricao}
-            multiline
-          />
-          <TouchableOpacity style={styles.button} onPress={salvarGrupo}>
-            <Text style={styles.buttonText}>Salvar</Text>
-          </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.content}>
+          <Text style={styles.welcomeText}>Criar Grupo</Text>
+          <View style={styles.groupContainer}>
+            <TouchableOpacity onPress={selectImage}>
+              <Text style={styles.input}>Adicionar Icone do Grupo</Text>
+            </TouchableOpacity>
+            {profileImageIcon && (
+              <Image style={styles.profileImageIcon} source={{ uri: profileImageIcon }} />
+            )}
+            <TextInput
+              placeholder="Nome do Grupo"
+              style={styles.input}
+              value={nomeGrupo}
+              onChangeText={setNomeGrupo}
+            />
+            <TextInput
+              placeholder="Máximo de Participantes"
+              style={styles.input}
+              value={maxParticipantes ? maxParticipantes.toString() : ''}
+              onChangeText={(text) => setMaxParticipantes(parseInt(text, 10))}
+              keyboardType="numeric"
+            />
+            <TextInput
+              placeholder="Valor"
+              style={styles.input}
+              value={formatarValor(valor)}
+              onChangeText={(text) => {
+                const parsedValue = parseFloat(text.replace('R$', '').replace(',', '.'));
+                if (!isNaN(parsedValue)) setValor(parsedValue);
+              }}
+              keyboardType="numeric"
+            />
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+              <Text>{dataRevelacao.toLocaleDateString()}</Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={dataRevelacao}
+                mode="date"
+                display="calendar"
+                onChange={handleDateChange}
+              />
+            )}
+            <TextInput
+              placeholder="Descrição"
+              style={[styles.input, styles.textarea]}
+              value={descricao}
+              onChangeText={setDescricao}
+              multiline
+            />
+            <TouchableOpacity style={styles.button} onPress={salvarGrupo}>
+              <Text style={styles.buttonText}>Salvar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -115,8 +177,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 210, // Largura da logo
-    height: 100, // Altura da logo
+    width: 210,
+    height: 100,
   },
   headerText: {
     color: 'white',
@@ -128,10 +190,15 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 40,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  content: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   welcomeText: {
     color: 'white',
@@ -169,6 +236,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  profileImageIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
   },
 });
 

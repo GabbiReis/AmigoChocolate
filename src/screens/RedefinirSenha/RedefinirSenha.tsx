@@ -4,32 +4,39 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert } fro
 import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
 import UserService from '../../service/UserService/UserService';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const EsqueciSenha = () => {
+const RedefinirSenha = () => {
   const navigation = useNavigation<StackTypes>();
   const [email, setEmail] = useState('');
+  const [tokenRecuperacao, setTokenRecuperacao] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const userService = new UserService();
   
-  const handleEsqueciSenha = async () => {
+  const handleRedefinirSenha = async () => {
     try {
-      const response = await userService.esqueciSenha(email);
+      const response = await userService.redefinirSenha(email, tokenRecuperacao, novaSenha);
       if (response) {
         setErrorMessage(null); // Limpa a mensagem de erro
-        setSuccessMessage('Email de recuperação enviado com sucesso.'); // Define a mensagem de sucesso
+        setSuccessMessage('Senha redefinida com sucesso.'); // Define a mensagem de sucesso
         setTimeout(() => {
-          navigation.navigate('RedefinirSenha'); // Redireciona para a página de RedefinirSenha
+          navigation.navigate('Login'); // Redireciona para a tela de login
         }, 2000); // Tempo para exibir a mensagem de sucesso antes do redirecionamento
       } else {
-        setErrorMessage('Falha ao enviar email de recuperação.');
+        setErrorMessage('Falha ao redefinir a senha.');
         setSuccessMessage(null); // Limpa a mensagem de sucesso
       }
     } catch (error) {
-      setErrorMessage('Ocorreu um erro ao enviar email de recuperação.');
+      setErrorMessage('Ocorreu um erro ao redefinir a senha.');
       setSuccessMessage(null); // Limpa a mensagem de sucesso
     }
+  };
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
   };
 
   return (
@@ -40,7 +47,7 @@ const EsqueciSenha = () => {
         <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
 
         <View style={styles.formContainer}>
-          <Text style={styles.title}>Esqueci senha</Text>
+          <Text style={styles.title}>Redefinir Senha</Text>
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Digite seu email"
@@ -49,6 +56,29 @@ const EsqueciSenha = () => {
               value={email}
               onChangeText={setEmail}
             />
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Digite o token de recuperação"
+              placeholderTextColor="gray"
+              style={styles.textInput}
+              value={tokenRecuperacao}
+              onChangeText={setTokenRecuperacao}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Digite a nova senha"
+              placeholderTextColor="gray"
+              style={styles.textInput}
+              secureTextEntry={!showPassword}
+              value={novaSenha}
+              onChangeText={setNovaSenha}
+            />
+            <TouchableOpacity onPress={toggleShowPassword} style={styles.eyeIcon}>
+            <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={24} color="black" />
+            </TouchableOpacity>
+            
           </View>
           {errorMessage ? (
             <View style={styles.errorContainer}>
@@ -60,21 +90,21 @@ const EsqueciSenha = () => {
               <Text style={styles.successText}>{successMessage}</Text>
             </View>
           ) : null}
-          <TouchableOpacity style={styles.loginButton} onPress={handleEsqueciSenha}>
-            <Text style={styles.loginText}>Enviar email de recuperação</Text>
+          <TouchableOpacity style={styles.redefinirButton} onPress={handleRedefinirSenha}>
+            <Text style={styles.redefinirText}>Redefinir Senha</Text>
           </TouchableOpacity>
           <View style={styles.registerContainer}>
-            <Text>Já tem uma conta? </Text>
-            <TouchableOpacity onPress={() => { navigation.navigate('Login'); }}>
-              <Text style={styles.registerLink}>Entrar</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.registerContainer}>
-            <Text>Já recebeu o Token?</Text>
-            <TouchableOpacity onPress={() => { navigation.navigate('RedefinirSenha'); }}>
-              <Text style={styles.registerLink}>Redefinir Senha</Text>
-            </TouchableOpacity>
-          </View>
+          <Text>Não tem uma conta? </Text>
+          <TouchableOpacity onPress={() => { navigation.navigate('Cadastro'); }}>
+            <Text style={styles.registerLink}>Cadastre-se</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.registerContainer}>
+          <Text>Esqueceu a senha? </Text>
+          <TouchableOpacity onPress={() => { navigation.navigate('EsqueciSenha'); }}>
+            <Text style={styles.registerLink}>Recuperar senha</Text>
+          </TouchableOpacity>
+        </View>
         </View>
       </View>
     </>
@@ -126,31 +156,18 @@ const styles = StyleSheet.create({
   textInput: {
     color: 'black',
   },
-  loginButton: {
+  redefinirButton: {
     backgroundColor: '#FFD100',
     padding: 15,
     borderRadius: 20,
     width: '100%',
     marginBottom: 10,
   },
-  loginText: {
+  redefinirText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  registerText: {
-    color: 'white',
-    fontSize: 14,
-  },
-  registerLink: {
-    textDecorationLine: 'underline',
-    color: '#fad75b',
-    marginLeft: 5,
   },
   errorContainer: {
     marginBottom: 10,
@@ -172,6 +189,25 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
   },
+  registerContainer: {
+    color: 'white',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  registerText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  registerLink: {
+    textDecorationLine: 'underline',
+    color: '#fad75b',
+    marginLeft: 5,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    zIndex: 1,
+  },
 });
 
-export default EsqueciSenha;
+export default RedefinirSenha;

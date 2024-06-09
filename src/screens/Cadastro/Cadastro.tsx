@@ -4,18 +4,24 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert } fro
 import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import UserService from '../../service/UserService/UserService'
+import CadastroService from '../../service/CadastroService/CadastroService';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { User } from '../../types/User';
+import { ImageSourcePropType } from 'react-native';
 
 const Cadastro = () => {
   const navigation = useNavigation<StackTypes>();
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Instanciando a classe UserService
-  const userService = new UserService();
+  const cadastroService = new CadastroService();
 
   const selectImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -30,52 +36,67 @@ const Cadastro = () => {
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
     }
   };
-  const cadastrarUsuario = async () => {
+
+  const handleUpload = async () => {
+    if (senha !== confirmarSenha) {
+      setErrorMessage('As senhas não coincidem.');
+      setSuccessMessage(null);
+      return;
+    }
+
     try {
-      // Cria um objeto de usuário com os dados do formulário
-      const user: User = { Nome: nome, Email: email, Senha: senha };
+      const user: User = {
+        Nome: nome,
+        Email: email,
+        Senha: senha,
+        Foto: profileImage as ImageSourcePropType
+      };
 
-      // Chama o método para cadastrar o usuário
-      const cadastradoComSucesso = await userService.cadastrarUser(user);
-
-      if (cadastradoComSucesso) {
-        // Usuário cadastrado com sucesso
-        alert('Usuário cadastrado com sucesso!');
+      const userAdded = await cadastroService.addUser(user);
+      console.log('Resposta do cadastro:', userAdded);
+      if (userAdded) {
+        setErrorMessage(null);
+        setSuccessMessage('Usuário cadastrado com sucesso.');
+        setTimeout(() => {
+          navigation.navigate('Login');
+        }, 2000); // Aguarda 2 segundos antes de redirecionar
       } else {
-        // Falha ao cadastrar usuário
-        alert('Erro ao cadastrar usuário. Por favor, tente novamente mais tarde.');
+        setErrorMessage('Houve um problema ao cadastrar o usuário.');
+        setSuccessMessage(null);
       }
     } catch (error) {
       console.error('Erro ao cadastrar usuário:', error);
-      alert('Erro ao cadastrar usuário. Por favor, tente novamente mais tarde.');
+      setErrorMessage('Houve um problema ao cadastrar o usuário.');
+      setSuccessMessage(null);
     }
   };
 
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword((prev) => !prev);
+  };
 
   return (
     <View style={styles.container}>
       <StatusBar style='light' />
       <Image style={styles.imageBackground} source={require('../../../assets/images/amigo-chocolate.png')} />
-      
-      {/* logo */}
+
       <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
-      
-      {/* formulário de cadastro */}
+
       <View style={styles.formContainer}>
         <Text style={styles.title}>Cadastro</Text>
 
-        {/* Adicionar foto de perfil */}
         <TouchableOpacity onPress={selectImage}>
           <Text style={styles.profileText}>Adicionar foto de perfil</Text>
         </TouchableOpacity>
 
-        {/* Exibir Foto */}
         {profileImage && (
           <Image style={styles.profileImage} source={{ uri: profileImage }} />
         )}
@@ -102,13 +123,39 @@ const Cadastro = () => {
           <TextInput
             placeholder="Senha"
             placeholderTextColor="gray"
-            secureTextEntry={true}
+            secureTextEntry={!showPassword}
             style={styles.textInput}
             onChangeText={setSenha}
             value={senha}
           />
+          <TouchableOpacity onPress={toggleShowPassword} style={styles.eyeIcon}>
+            <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={24} color="black" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.loginButton} onPress={() => cadastrarUsuario()}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Confirmar Senha"
+            placeholderTextColor="gray"
+            secureTextEntry={!showConfirmPassword}
+            style={styles.textInput}
+            onChangeText={setConfirmarSenha}
+            value={confirmarSenha}
+          />
+          <TouchableOpacity onPress={toggleShowConfirmPassword} style={styles.eyeIcon}>
+            <MaterialCommunityIcons name={showConfirmPassword ? "eye-off" : "eye"} size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+        {errorMessage ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
+        {successMessage ? (
+          <View style={styles.successContainer}>
+            <Text style={styles.successText}>{successMessage}</Text>
+          </View>
+        ) : null}
+        <TouchableOpacity style={styles.loginButton} onPress={handleUpload}>
           <Text style={styles.loginText}>Cadastrar</Text>
         </TouchableOpacity>
         <View style={styles.registerContainer}>
@@ -137,18 +184,18 @@ const styles = StyleSheet.create({
     position: 'absolute'
   },
   logo: {
-    position: 'absolute', // Adiciona a posição absoluta
-    top: 20, // Distância do topo
-    left: 20, // Distância da esquerda
-    width: 210, // Largura da logo (ajuste conforme necessário)
-    height: 100, // Altura da logo (ajuste conforme necessário)
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    width: 210,
+    height: 100,
   },
   formContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Cor de fundo do formulário
-    width: '80%', // Largura do formulário
-    borderRadius: 20, // Borda do formulário
-    padding: 20, // Espaçamento interno do formulário
-    alignItems: 'center', // Centralizar elementos no formulário
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    width: '80%',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
   },
   title: {
     color: 'white',
@@ -171,12 +218,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   inputContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Cor de fundo do campo de entrada
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     justifyContent: 'center',
     padding: 15,
     borderRadius: 20,
     marginBottom: 10,
-    width: '100%', // Preencher a largura do formulário
+    width: '100%',
   },
   textInput: {
     color: 'black',
@@ -185,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD100',
     padding: 15,
     borderRadius: 20,
-    width: '100%', // Preencher a largura do formulário
+    width: '100%',
     marginBottom: 10,
   },
   loginText: {
@@ -194,18 +241,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  errorContainer: {
+    marginBottom: 10,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    padding: 10,
+  },
+  errorText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+  successContainer: {
+    marginBottom: 10,
+    backgroundColor: 'green',
+    borderRadius: 10,
+    padding: 10,
+  },
+  successText: {
+    color: 'white',
+    textAlign: 'center',
+  },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-  },
-  registerText: {
-    color: 'white',
-    fontSize: 14,
   },
   registerLink: {
     textDecorationLine: 'underline',
     color: '#fad75b',
     marginLeft: 5,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    zIndex: 1,
   },
 });
 

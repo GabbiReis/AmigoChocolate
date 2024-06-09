@@ -3,30 +3,60 @@ import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
-import UserService   from '../../service/UserService/UserService';
-import { FlexContainer, FlexItem, FlexColumn, FlexGridColumn } from 'react-smart-flexbox';
+import UserService from '../../service/UserService/UserService';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<String>('');
-  const [usernameError, setUsernameError] = useState(false);
+  const [senha, setSenha] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const userService = new UserService();
 
   const navigation = useNavigation<StackTypes>();
 
+  // Função para configurar o axios para incluir o token JWT nos headers
+  const configureAxios = (token: string) => {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+};
 
+const handleLogin = async () => {
+  try {
+      const isSuccess = await userService.login(email, senha);
+      console.log('Login success:', isSuccess); // Adicionando log para verificar o sucesso do login
+      if (isSuccess) {
+          const token = userService.getToken();
+          if (token) {
+              // Armazene o token JWT localmente
+              localStorage.setItem('tokenJwt', token);
 
+              // Configure o axios para incluir o token JWT nos headers
+              configureAxios(token);
+          }
+          setErrorMessage(null); // Limpa a mensagem de erro
+          console.log('Login success:', isSuccess); // Adicionando log para depuração
+          navigation.navigate('PaginaInicial');
+      } else {
+          setErrorMessage('Email ou senha incorretos.');
+      }
+  } catch (error) {
+      console.error('Erro no handleLogin:', error); // Adicionando log para depuração
+      setErrorMessage('Não foi possível realizar o login. Verifique os dados e tente novamente.');
+  }
+};
 
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   return (
     <View style={styles.container}>
-      <StatusBar style='light' />
+      <StatusBar style="light" />
       <Image style={styles.imageBackground} source={require('../../../assets/images/amigo-chocolate.png')} />
-
       <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
-      
-      {/* View para o formulário de login */}
+
       <View style={styles.formContainer}>
         <Text style={styles.title}>Login</Text>
 
@@ -43,29 +73,33 @@ const Login = () => {
           <TextInput
             placeholder="Senha"
             placeholderTextColor="gray"
-            onChangeText={setPassword}
-            secureTextEntry={true}
-            value={password as string}
+            onChangeText={setSenha}
+            secureTextEntry={!showPassword}
+            value={senha}
             style={styles.textInput}
           />
+          <TouchableOpacity onPress={toggleShowPassword} style={styles.eyeIcon}>
+            <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={24} color="black" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.loginButton} >
-        <Text style={styles.loginText} onPress={() => { navigation.navigate('PaginaInicial'); }}>Login</Text>
+        {errorMessage ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
         <View style={styles.registerContainer}>
           <Text>Não tem uma conta? </Text>
-          <TouchableOpacity>
-            <Text style={styles.registerLink} onPress={() => { navigation.navigate('Cadastro'); }}>
-              Cadastre-se
-            </Text>
+          <TouchableOpacity onPress={() => { navigation.navigate('Cadastro'); }}>
+            <Text style={styles.registerLink}>Cadastre-se</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.registerContainer}>
           <Text>Esqueceu a senha? </Text>
-          <TouchableOpacity>
-            <Text style={styles.registerLink} onPress={() => { navigation.navigate('EsqueciSenha'); }}>
-              Recuperar senha
-            </Text>
+          <TouchableOpacity onPress={() => { navigation.navigate('EsqueciSenha'); }}>
+            <Text style={styles.registerLink}>Recuperar senha</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -83,21 +117,21 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
     width: '100%',
-    position: 'absolute'
+    position: 'absolute',
   },
   logo: {
-    position: 'absolute', // Adiciona a posição absoluta
-    top: 20, // Distância do topo
-    left: 20, // Distância da esquerda
-    width: 210, // Largura da logo (ajuste conforme necessário)
-    height: 100, // Altura da logo (ajuste conforme necessário)
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    width: 210,
+    height: 100,
   },
   formContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Cor de fundo do formulário
-    width: '80%', // Largura do formulário
-    borderRadius: 20, // Borda do formulário
-    padding: 20, // Espaçamento interno do formulário
-    alignItems: 'center', // Centralizar elementos no formulário
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    width: '80%',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
   },
   title: {
     color: 'white',
@@ -113,16 +147,27 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 20,
     marginBottom: 10,
-    width: '100%', // Alterado para preencher a largura do formulário
+    width: '100%',
   },
   textInput: {
     color: 'black',
+  },
+  errorText: {
+    color: 'white',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    marginBottom: 10,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    padding: 10,
   },
   loginButton: {
     backgroundColor: '#FFD100',
     padding: 15,
     borderRadius: 20,
-    width: '100%', // Alterado para preencher a largura do formulário
+    width: '100%',
     marginBottom: 10,
   },
   loginText: {
@@ -144,6 +189,11 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     color: '#fad75b',
     marginLeft: 5,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    zIndex: 1,
   },
 });
 

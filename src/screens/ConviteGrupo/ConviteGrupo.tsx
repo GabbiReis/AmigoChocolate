@@ -32,6 +32,7 @@ const navigation = useNavigation<StackTypes>();
       </View>
       <View style={styles.content}>
         <Text style={styles.inviteTitle}>Convite para o Grupo</Text>
+        <Text style={styles.descriptionText}>Você foi convidado para participar do grupo... Os Vingadores, para sortear o amigo Chocolate. Você aceita participar?</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={[styles.button, styles.entrarButton]} onPress={entrarNoGrupo}>
             <Text style={styles.buttonText}>Entrar</Text>
@@ -80,6 +81,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  descriptionText: {
+    alignItems: 'center',
+    fontSize: 16,
+    color: 'white',
+    marginBottom: 20,
   },
   inviteTitle: {
     fontSize: 24,

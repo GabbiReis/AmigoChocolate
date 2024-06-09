@@ -10,22 +10,31 @@ import CriarGrupo from '../screens/CriarGrupo/CriarGrupo';
 import DetalhesGrupo from '../screens/DetalhesGrupo/DetalhesGrupo';
 import ConviteGrupo from '../screens/ConviteGrupo/ConviteGrupo';
 import PerfilUsuario from '../screens/PerfilUsuario/PerfilUsuario'
+import Sobre from '../screens/Sobre/Sobre';
+import RedefinirSenha from '../screens/RedefinirSenha/RedefinirSenha';
+import Splash from '../screens/Splash/Splash';
 
 
 const Stack = createNativeStackNavigator();
 
-
-
 type StackNavigation = {
-    Login : undefined;
-    EsqueciSenha : undefined;
+    Splash: undefined;
+    Login: undefined;
+    EsqueciSenha: undefined;
     Cadastro: undefined;
     Inicio: undefined;
     PaginaInicial: undefined;
     CriarGrupo: undefined;
-    DetalhesGrupo: undefined;
+    DetalhesGrupo: { grupoId: number };
     ConviteGrupo: undefined;
     PerfilUsuario: undefined;
+    Sobre: undefined;
+    RedefinirSenha: undefined;
+}
+
+export type RootStackParamList = {
+    Splash: undefined;
+
 }
 
 
@@ -48,6 +57,7 @@ export default function StackComponent(){
                     },
                   })}
                 />
+                <Stack.Screen name="Splash" component={Splash} />
                 <Stack.Screen  name="EsqueciSenha" component={EsqueciSenha} />
                 <Stack.Screen  name="Login" component={Login} />
                 <Stack.Screen  name="Cadastro" component={Cadastro}/>
@@ -57,7 +67,8 @@ export default function StackComponent(){
                 <Stack.Screen name="DetalhesGrupo"component={DetalhesGrupo}/>
                 <Stack.Screen name="ConviteGrupo"component={ConviteGrupo}/>
                 <Stack.Screen name="PerfilUsuario"component={PerfilUsuario}/>
-        
+                <Stack.Screen name="Sobre"component={Sobre}/>
+                <Stack.Screen name="RedefinirSenha" component={RedefinirSenha} />
             </Stack.Navigator>
         </NavigationContainer>
 

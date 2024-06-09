@@ -1,43 +1,45 @@
 import axios, { AxiosResponse } from 'axios';
 import { Grupo } from '../../types/Grupo';
 
-const BASE_URL = 'https://localhost:7217/';
+const BASE_URL = 'https://localhost:7147/api';
 
 class GrupoService {
+  private token: string | null = null;
 
-    constructor() {
-        // Se necessário, adicione inicializações aqui
-    }
+  constructor(token: string) {
+    this.token = token;
+  }
 
-    async criarGrupo(grupo: Grupo): Promise<boolean> {
-        try {
-            const response = await axios.post(`${BASE_URL}/api/Grupos`, grupo);
-            return response.status === 201; // Verifica se o status é 201 (Created)
-        } catch (error) {
-            console.error('Erro ao criar grupo:', error);
-            return false;
-        }
-    }
+  public async criarGrupo(grupo: Grupo): Promise<boolean> {
+    try {
+      const formData = new FormData();
+      formData.append('Nome', grupo.Nome);
+      formData.append('QuantidadeMaxParticipantes', grupo.QuantidadeMaxParticipantes.toString());
+      formData.append('Valor', grupo.Valor.toString());
+      formData.append('DataRevelacao', grupo.DataRevelacao.toISOString());
+      formData.append('Descricao', grupo.Descricao);
 
-    async buscarGrupos(): Promise<Grupo[]> {
-        try {
-            const response: AxiosResponse<Grupo[]> = await axios.get(`${BASE_URL}/api/Grupos`);
-            return response.data;
-        } catch (error) {
-            console.error('Erro ao buscar grupos:', error);
-            return []; // Retorna um array vazio em caso de erro
-        }
-    }
+      if (grupo.Icone) {
+        const responsePhoto = await fetch(grupo.Icone.toString());
+        const blob = await responsePhoto.blob();
+        formData.append('Icone', blob, 'photo.jpg');
+      }
 
-    async excluirGrupo(id: number): Promise<boolean> {
-        try {
-            const response = await axios.delete(`${BASE_URL}/api/Grupos/${id}`);
-            return response.status === 204; // Verifica se o status é 204 (No Content)
-        } catch (error) {
-            console.error('Erro ao excluir grupo:', error);
-            return false;
-        }
+      const response = await axios.post(`${BASE_URL}/Grupos/Cadastrar`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: this.token ? `Bearer ${this.token}` : '',
+        },
+      });
+
+      return response.status === 201;
+    } catch (error) {
+      console.error('Erro ao criar grupo:', error);
+      throw new Error('Não foi possível criar o grupo. Verifique sua conexão e tente novamente.');
     }
+  }
+
+  // Outros métodos do serviço...
 }
 
 export default GrupoService;

@@ -1,4 +1,10 @@
+import { ImageSourcePropType } from 'react-native';
+
 export interface Grupo {
-    id: number;
-    nome: string;
+  Nome: string;
+  QuantidadeMaxParticipantes: number;
+  Valor: number;
+  DataRevelacao: Date;
+  Descricao: string;
+  Icone: ImageSourcePropType;
 }
