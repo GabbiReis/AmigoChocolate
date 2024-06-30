@@ -8,6 +8,8 @@ import GrupoService from '../../service/GrupoService/GrupoService';
 import { Grupo } from '../../types/Grupo';
 import { ImageSourcePropType } from 'react-native';
 import UserService from '../../service/UserService/UserService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '../../types/User';
 
 const CriarGrupo = () => {
   const [nomeGrupo, setNomeGrupo] = useState('');
@@ -18,6 +20,7 @@ const CriarGrupo = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [descricao, setDescricao] = useState<string>('');
   const [grupoService, setGrupoService] = useState<GrupoService | null>(null);
+  const [usuario, setUsuario] = useState<User | null>(null);
 
   const navigation = useNavigation<StackTypes>();
   const userService = new UserService();
@@ -26,24 +29,36 @@ const CriarGrupo = () => {
     const token = userService.getToken();
     if (token) {
       setGrupoService(new GrupoService(token));
+      userService.setToken(token);
+      userService.getUsuarioAutenticado().then(setUsuario);
     }
   }, []);
 
   const salvarGrupo = async () => {
-    if (!grupoService) {
-      console.error('Erro: serviço de grupo não está disponível.');
+    if (!grupoService || !usuario) {
+      console.error('Erro: serviço de grupo ou usuário não está disponível.');
       return;
     }
-
+    
     try {
+      const token = await AsyncStorage.getItem('tokenJwt');
+      const userId = await AsyncStorage.getItem('userId');
+    
+      if (!token || !userId) {
+        throw new Error('Token JWT ou ID do usuário não encontrado.');
+      }
+    
       const grupo: Grupo = {
         Nome: nomeGrupo,
         QuantidadeMaxParticipantes: maxParticipantes,
         Valor: valor || 0,
         DataRevelacao: dataRevelacao,
         Descricao: descricao,
-        Icone: profileImageIcon as ImageSourcePropType
+        Icone: profileImageIcon as ImageSourcePropType,
+        UsuariosGrupos: [usuario],
+        administradorId: userId,
       };
+      
 
       const sucesso = await grupoService.criarGrupo(grupo);
 

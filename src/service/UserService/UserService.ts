@@ -1,58 +1,67 @@
 import axios from 'axios';
-
+import { User } from '../../types/User';
 
 class UserService {
-  private BASE_URL = 'https://localhost:7147/api/Usuarios'; // Atualize a URL base conforme necessário
+  private BASE_URL = 'https://localhost:7147/api/Usuarios';
   private token: string | null = null;
+  private userId: number | null = null;
 
-  // Método de autenticação
   async login(email: string, senha: string): Promise<boolean> {
     try {
-        const response = await axios.post(`${this.BASE_URL}/Login`, new URLSearchParams({ email, senha }), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-        console.log('Resposta do servidor:', response.data); // Adicionando log para depuração
-        if (response.status === 200 && response.data.tokenJwt) {
-          const token = response.data.tokenJwt;
-          // Armazena o token no localStorage
-          localStorage.setItem('jwtToken', token);
-          this.token = token; // Defina o token para uso posterior
-          return true;
+      const response = await axios.post(`${this.BASE_URL}/Login`, new URLSearchParams({ email, senha }), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+
+      console.log('Resposta do servidor:', response.data);
+
+      if (response.status === 200 && response.data.tokenJwt) {
+        const token = response.data.tokenJwt;
+        const userId = response.data.id;
+
+        if (userId) {
+          this.userId = userId;
+          localStorage.setItem('userId', userId.toString());
+        }
+
+        localStorage.setItem('jwtToken', token);
+        this.token = token;
+        return true;
       } else {
-          console.error('Erro no login: Token JWT não encontrado');
-          return false;
+        console.error('Erro no login: Token JWT não encontrado');
+        return false;
       }
     } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Erro ao fazer login:', error.message);
-            if (error.response) {
-                console.error('Dados da resposta de erro:', error.response.data);
-            }
-        } else {
-            console.error('Erro desconhecido ao fazer login:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Erro ao fazer login:', error.message);
+        if (error.response) {
+          console.error('Dados da resposta de erro:', error.response.data);
         }
-        return false;
+      } else {
+        console.error('Erro desconhecido ao fazer login:', error);
+      }
+      return false;
     }
-}
+  }
 
-  // Método para obter o token JWT
   public getToken(): string | null {
     return this.token || localStorage.getItem('jwtToken');
-}
+  }
 
-  // Método para definir o token JWT (útil para restaurar o token de um armazenamento persistente, como localStorage)
+  public getUserId(): number | null {
+    return this.userId || parseInt(localStorage.getItem('userId') || '', 10) || null;
+  }
+
   public setToken(token: string | null): void {
     this.token = token;
   }
 
-  // Exemplo de método para buscar dados protegidos usando o token JWT
   public async getProtectedData(): Promise<any> {
     try {
       const response = await axios.get(`${this.BASE_URL}/api/Grupos`, {
         headers: {
-          Authorization: this.token ? `Bearer ${this.token}` : '', // Inclui o token no cabeçalho de autorização
+          Authorization: this.token ? `Bearer ${this.token}` : '',
         },
       });
       return response.data;
@@ -66,7 +75,6 @@ class UserService {
     }
   }
 
-  // Método para solicitação de recuperação de senha
   public async esqueciSenha(email: string): Promise<boolean> {
     try {
       const response = await axios.post(`${this.BASE_URL}/EsqueciSenha`, { email }, {
@@ -74,7 +82,7 @@ class UserService {
           'Content-Type': 'application/json',
         },
       });
-      return response.status === 200; // Retorna true se a solicitação foi bem-sucedida
+      return response.status === 200;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error('Erro ao solicitar recuperação de senha:', error.response?.data || error.message);
@@ -85,7 +93,6 @@ class UserService {
     }
   }
 
-  // Método para redefinição de senha
   async redefinirSenha(email: string, tokenRecuperacao: string, novaSenha: string): Promise<boolean> {
     try {
       const response = await axios.post(`${this.BASE_URL}/RedefinirSenha`, {
@@ -97,6 +104,20 @@ class UserService {
     } catch (error) {
       console.error('Erro ao redefinir senha:', error);
       return false;
+    }
+  }
+
+  public async getUsuarioAutenticado(): Promise<User | null> {
+    try {
+      const response = await axios.get(`${this.BASE_URL}/Me`, {
+        headers: {
+          Authorization: this.token ? `Bearer ${this.token}` : '',
+        },
+      });
+      return response.data as User;
+    } catch (error) {
+      console.error('Erro ao obter usuário autenticado:', error);
+      return null;
     }
   }
 }

@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
+import { StackTypes } from '../../routes/stack';
 import UserService from '../../service/UserService/UserService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = () => {
   const [email, setEmail] = useState<string>('');
@@ -14,38 +15,38 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const userService = new UserService();
-
   const navigation = useNavigation<StackTypes>();
 
-  // Função para configurar o axios para incluir o token JWT nos headers
+  const handleLogin = async () => {
+    try {
+      const isSuccess = await userService.login(email, senha);
+      if (isSuccess) {
+        const token = userService.getToken();
+        if (token) {
+          await AsyncStorage.setItem('tokenJwt', token);
+          configureAxios(token);
+        }
+        const userId = userService.getUserId();
+
+        if (userId) {
+          await AsyncStorage.setItem('userId', userId.toString());
+        } else {
+          throw new Error('ID do usuário não encontrado após o login.');
+        }
+
+        setErrorMessage(null);
+        navigation.navigate('PaginaInicial');
+      } else {
+        setErrorMessage('Email ou senha incorretos.');
+      }
+    } catch (error) {
+      console.error('Erro no handleLogin:', error);
+      setErrorMessage('Não foi possível realizar o login. Verifique os dados e tente novamente.');
+    }
+  };
   const configureAxios = (token: string) => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-};
-
-const handleLogin = async () => {
-  try {
-      const isSuccess = await userService.login(email, senha);
-      console.log('Login success:', isSuccess); // Adicionando log para verificar o sucesso do login
-      if (isSuccess) {
-          const token = userService.getToken();
-          if (token) {
-              // Armazene o token JWT localmente
-              localStorage.setItem('tokenJwt', token);
-
-              // Configure o axios para incluir o token JWT nos headers
-              configureAxios(token);
-          }
-          setErrorMessage(null); // Limpa a mensagem de erro
-          console.log('Login success:', isSuccess); // Adicionando log para depuração
-          navigation.navigate('PaginaInicial');
-      } else {
-          setErrorMessage('Email ou senha incorretos.');
-      }
-  } catch (error) {
-      console.error('Erro no handleLogin:', error); // Adicionando log para depuração
-      setErrorMessage('Não foi possível realizar o login. Verifique os dados e tente novamente.');
-  }
-};
+  };
 
   const toggleShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -82,23 +83,23 @@ const handleLogin = async () => {
             <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={24} color="black" />
           </TouchableOpacity>
         </View>
-        {errorMessage ? (
+        {errorMessage && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{errorMessage}</Text>
           </View>
-        ) : null}
+        )}
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
         <View style={styles.registerContainer}>
           <Text>Não tem uma conta? </Text>
-          <TouchableOpacity onPress={() => { navigation.navigate('Cadastro'); }}>
+          <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
             <Text style={styles.registerLink}>Cadastre-se</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.registerContainer}>
           <Text>Esqueceu a senha? </Text>
-          <TouchableOpacity onPress={() => { navigation.navigate('EsqueciSenha'); }}>
+          <TouchableOpacity onPress={() => navigation.navigate('EsqueciSenha')}>
             <Text style={styles.registerLink}>Recuperar senha</Text>
           </TouchableOpacity>
         </View>

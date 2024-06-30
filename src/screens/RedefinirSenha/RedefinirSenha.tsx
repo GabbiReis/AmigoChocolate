@@ -21,18 +21,18 @@ const RedefinirSenha = () => {
     try {
       const response = await userService.redefinirSenha(email, tokenRecuperacao, novaSenha);
       if (response) {
-        setErrorMessage(null); // Limpa a mensagem de erro
-        setSuccessMessage('Senha redefinida com sucesso.'); // Define a mensagem de sucesso
+        setErrorMessage(null);
+        setSuccessMessage('Senha redefinida com sucesso.');
         setTimeout(() => {
-          navigation.navigate('Login'); // Redireciona para a tela de login
-        }, 2000); // Tempo para exibir a mensagem de sucesso antes do redirecionamento
+          navigation.navigate('Login');
+        }, 2000);
       } else {
         setErrorMessage('Falha ao redefinir a senha.');
-        setSuccessMessage(null); // Limpa a mensagem de sucesso
+        setSuccessMessage(null);
       }
     } catch (error) {
       setErrorMessage('Ocorreu um erro ao redefinir a senha.');
-      setSuccessMessage(null); // Limpa a mensagem de sucesso
+      setSuccessMessage(null);
     }
   };
   const toggleShowPassword = () => {

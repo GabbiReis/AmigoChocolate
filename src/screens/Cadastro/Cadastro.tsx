@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
@@ -11,13 +11,13 @@ import { ImageSourcePropType } from 'react-native';
 
 const Cadastro = () => {
   const navigation = useNavigation<StackTypes>();
-  const [profileImage, setProfileImage] = useState('');
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profileImage, setProfileImage] = useState<string>('');
+  const [nome, setNome] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [senha, setSenha] = useState<string>('');
+  const [confirmarSenha, setConfirmarSenha] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -53,7 +53,8 @@ const Cadastro = () => {
         Nome: nome,
         Email: email,
         Senha: senha,
-        Foto: profileImage as ImageSourcePropType
+        ConfirmacaoSenha: confirmarSenha,
+        Foto: profileImage as ImageSourcePropType,
       };
 
       const userAdded = await cadastroService.addUser(user);
@@ -63,7 +64,7 @@ const Cadastro = () => {
         setSuccessMessage('Usuário cadastrado com sucesso.');
         setTimeout(() => {
           navigation.navigate('Login');
-        }, 2000); // Aguarda 2 segundos antes de redirecionar
+        }, 2000);
       } else {
         setErrorMessage('Houve um problema ao cadastrar o usuário.');
         setSuccessMessage(null);
@@ -97,9 +98,9 @@ const Cadastro = () => {
           <Text style={styles.profileText}>Adicionar foto de perfil</Text>
         </TouchableOpacity>
 
-        {profileImage && (
+        {profileImage ? (
           <Image style={styles.profileImage} source={{ uri: profileImage }} />
-        )}
+        ) : null}
 
         <View style={styles.inputContainer}>
           <TextInput

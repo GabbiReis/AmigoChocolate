@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, ScrollView } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackTypes } from '../../routes/stack';
+import GrupoService from '../../service/GrupoService/GrupoService';
 
 const MenuIcon = () => (
   <View style={styles.menuIcon}>
@@ -16,11 +17,50 @@ const MenuIcon = () => (
 const PaginaInicial = () => {
   const [navbarVisible, setNavbarVisible] = useState(false);
   const [grupos, setGrupos] = useState<any[]>([]);
+  const [showNoGroupsMessage, setShowNoGroupsMessage] = useState(true);
   const navigation = useNavigation<StackTypes>();
 
+  const [grupoSelecionadoId, setGrupoSelecionadoId] = useState<number>(0);
+
+  const fetchGrupos = async () => {
+    try {
+      const token = await AsyncStorage.getItem('tokenJwt');
+      if (token) {
+        const grupoService = new GrupoService(token);
+        const gruposUsuario = await grupoService.getGruposDoUsuario();
+        console.log('Grupos do usuário:', gruposUsuario);
+
+        if (Array.isArray(gruposUsuario)) {
+          setGrupos(gruposUsuario);
+          setShowNoGroupsMessage(gruposUsuario.length === 0);
+        } else {
+          console.error('Resposta inesperada ao buscar os grupos do usuário:', gruposUsuario);
+          setGrupos([]);
+          setShowNoGroupsMessage(true);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao buscar os grupos do usuário:', error);
+      setGrupos([]);
+      setShowNoGroupsMessage(true);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchGrupos();
+    }, [])
+  );
+
   useEffect(() => {
-    fetchGrupos();
-  }, []);
+    if (grupos.length === 0) {
+      const timer = setTimeout(() => {
+        setShowNoGroupsMessage(false);
+      }, 120000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [grupos]);
 
   const toggleNavbar = () => {
     setNavbarVisible(!navbarVisible);
@@ -32,13 +72,9 @@ const PaginaInicial = () => {
     }
   };
 
-  const fetchGrupos = async () => {
-    try {
-      const response = await axios.get('https://localhost:7147/api/Grupos');
-      setGrupos(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar os grupos:', error);
-    }
+  const handleGrupoPress = (grupoId: number) => {
+    setGrupoSelecionadoId(grupoId);
+    navigation.navigate('DetalhesGrupo', { grupoId });
   };
 
   return (
@@ -74,21 +110,32 @@ const PaginaInicial = () => {
             </TouchableOpacity>
           </View>
         )}
-        <View style={styles.content}>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <Text style={styles.welcomeText}>Bem-vindo(a)!</Text>
-          <FlatList
-            data={grupos}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.groupContainer} onPress={() => navigation.navigate('DetalhesGrupo', { grupoId: item.ID })}>
-                <Text style={styles.groupText}>{item.Nome}</Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item) => (item.ID ? item.ID.toString() : null)}
-          />
+          {grupos.length === 0 && showNoGroupsMessage && (
+            <Text style={styles.textInicial}>Você ainda não participa de nenhum grupo.</Text>
+          )}
+          {grupos.length > 0 && (
+            <>
+              <Text style={styles.textInicial}>Abaixo a lista de grupos nos quais você participa:</Text>
+              {grupos.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.groupContainer}
+                  onPress={() => handleGrupoPress(item.id)}
+                >
+                  <Text style={styles.groupText}>{item.nome}</Text>
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CriarGrupo')}>
             <Text style={styles.buttonText}>Criar Grupo</Text>
           </TouchableOpacity>
-        </View>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('EntrarGrupo')}>
+            <Text style={styles.buttonText}>Entrar em um grupo</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </>
   );
@@ -120,10 +167,15 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 40,
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  scrollViewContent: {
+    gap: 8,
     alignItems: 'center',
+    paddingVertical: 20,
+  },
+  textInicial: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
   welcomeText: {
     color: 'white',
@@ -133,15 +185,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   groupContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(245, 245, 244, 0.9)',
     borderRadius: 10,
+    borderWidth: 3, 
+    borderColor: '#6D3415',
     padding: 20,
     alignItems: 'center',
     width: '80%',
     marginBottom: 20,
   },
   groupText: {
-    color: 'white',
+    color: '#6D3415',
     fontSize: 18,
   },
   navbar: {

@@ -17,18 +17,18 @@ const EsqueciSenha = () => {
     try {
       const response = await userService.esqueciSenha(email);
       if (response) {
-        setErrorMessage(null); // Limpa a mensagem de erro
-        setSuccessMessage('Email de recuperação enviado com sucesso.'); // Define a mensagem de sucesso
+        setErrorMessage(null); 
+        setSuccessMessage('Email de recuperação enviado com sucesso.');
         setTimeout(() => {
-          navigation.navigate('RedefinirSenha'); // Redireciona para a página de RedefinirSenha
-        }, 2000); // Tempo para exibir a mensagem de sucesso antes do redirecionamento
+          navigation.navigate('RedefinirSenha');
+        }, 2000);
       } else {
         setErrorMessage('Falha ao enviar email de recuperação.');
-        setSuccessMessage(null); // Limpa a mensagem de sucesso
+        setSuccessMessage(null);
       }
     } catch (error) {
       setErrorMessage('Ocorreu um erro ao enviar email de recuperação.');
-      setSuccessMessage(null); // Limpa a mensagem de sucesso
+      setSuccessMessage(null);
     }
   };
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, FlatList } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, ScrollView } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackTypes } from '../../routes/stack';
@@ -61,18 +61,20 @@ const Sobre = () => {
           </View>
         )}
         <View style={styles.formContainer}>
-          <View style={styles.content}>
-            <View style={styles.sobreContainer}>
-              <Text style={styles.sobreTitle}>Bem-vindo(a) ao ChocoMigos!</Text>
-              <Text style={styles.sobreDescription}>
-                O ChocoMigos é uma aplicação que torna a organização de sorteios de Amigo Chocolate fácil e divertida. Com o ChocoMigos, você pode criar grupos de amigos, familiares ou colegas de trabalho, e o aplicativo cuida de todo o processo de sorteio para você.
-                {"\n\n"}
-                Esqueça os papéis dobrados e os sorteios manuais! O ChocoMigos faz todo o trabalho pesado para você. Basta adicionar os participantes, configurar as regras do sorteio (como restrições de presentes, valor máximo, etc.) e deixar o aplicativo fazer o resto.
-                {"\n\n"}
-                Além disso, o ChocoMigos permite que você mantenha o anonimato dos sorteios, garantindo uma experiência justa e emocionante para todos os participantes. Com recursos intuitivos e uma interface amigável, é fácil e conveniente usar o ChocoMigos para organizar seus sorteios de Amigo Chocolate.
-              </Text>
+          <ScrollView contentContainerStyle={styles.scrollViewContent}>
+            <View style={styles.content}>
+              <View style={styles.sobreContainer}>
+                <Text style={styles.sobreTitle}>Bem-vindo(a) ao ChocoMigos!</Text>
+                <Text style={styles.sobreDescription}>
+                  O ChocoMigos é uma aplicação que torna a organização de sorteios de Amigo Chocolate fácil e divertida. Com o ChocoMigos, você pode criar grupos de amigos, familiares ou colegas de trabalho, e o aplicativo cuida de todo o processo de sorteio para você.
+                  {"\n\n"}
+                  Esqueça os papéis dobrados e os sorteios manuais! O ChocoMigos faz todo o trabalho pesado para você. Basta adicionar os participantes, configurar as regras do sorteio (como restrições de presentes, valor máximo, etc.) e deixar o aplicativo fazer o resto.
+                  {"\n\n"}
+                  Além disso, o ChocoMigos permite que você mantenha o anonimato dos sorteios, garantindo uma experiência justa e emocionante para todos os participantes. Com recursos intuitivos e uma interface amigável, é fácil e conveniente usar o ChocoMigos para organizar seus sorteios de Amigo Chocolate.
+                </Text>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </View>
     </>
@@ -106,6 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   formContainer: {
+    flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: 20,
     alignItems: 'center',
@@ -163,6 +166,11 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingBottom: 20,
   },
 });
 

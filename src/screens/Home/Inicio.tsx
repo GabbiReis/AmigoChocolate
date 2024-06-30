@@ -50,19 +50,12 @@ const styles = StyleSheet.create({
     position: 'absolute'
   },
   logo: {
-    position: 'absolute', // Adiciona a posição absoluta
-    top: 20, // Distância do topo
-    left: 20, // Distância da esquerda
-    width: 210, // Largura da logo (ajuste conforme necessário)
-    height: 100, // Altura da logo (ajuste conforme necessário)
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    width: 210,
+    height: 100,
   },
-  // formContainer: {
-  //   backgroundColor: 'rgba(0, 0, 0, 0.3)', // Cor de fundo do formulário
-  //   width: '80%', // Largura do formulário
-  //   borderRadius: 20, // Borda do formulário
-  //   padding: 20, // Espaçamento interno do formulário
-  //   alignItems: 'center', // Centralizar elementos no formulário
-  // },
   title: {
     top: 175,
     color: 'white',
@@ -78,7 +71,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 20,
     marginBottom: 10,
-    width: '100%', // Alterado para preencher a largura do formulário
+    width: '100%',
   },
   textInput: {
     color: 'black',
@@ -89,7 +82,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD100',
     padding: 15,
     borderRadius: 20,
-    width: '60%', // Alterado para preencher a largura do formulário
+    width: '60%',
     marginBottom: 10,
   },
   loginText: {
