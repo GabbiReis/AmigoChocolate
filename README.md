@@ -14,6 +14,7 @@ ChocoMigos é um aplicativo mobile desenvolvido para um trabalho do 5º período
 - [Visão Geral](#visão-geral)
 - [Instalação](#instalação)
 - [Uso](#uso)
+- [Execução do Dockerfile](#execução-do-dockerfile)
 - [Funcionalidades](#funcionalidades)
 - [Licença](#licença)
 
@@ -64,10 +65,10 @@ Para rodar a API utilizando Docker, siga os passos abaixo:
 
 3. Após a construção da imagem, inicie um container a partir dela:
     ```bash
-    docker run -d -p 3000:3000 chocomigos-api
+    docker run -d -p 8081:8081 chocomigos-api
     ```
 
-4. A API estará rodando e acessível em `http://localhost:3000`.
+4. A API estará rodando e acessível em `http://localhost:8081`.
 
 ## Funcionalidades
 
