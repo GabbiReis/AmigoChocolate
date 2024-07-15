@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackTypes } from '../../routes/stack';
@@ -19,8 +19,7 @@ const PaginaInicial = () => {
   const [grupos, setGrupos] = useState<any[]>([]);
   const [showNoGroupsMessage, setShowNoGroupsMessage] = useState(true);
   const navigation = useNavigation<StackTypes>();
-
-  const [grupoSelecionadoId, setGrupoSelecionadoId] = useState<number>(0);
+  const navbarAnimation = useRef(new Animated.Value(-1000)).current;
 
   const fetchGrupos = async () => {
     try {
@@ -62,24 +61,30 @@ const PaginaInicial = () => {
     }
   }, [grupos]);
 
+
   const toggleNavbar = () => {
     setNavbarVisible(!navbarVisible);
   };
 
   const closeNavbar = () => {
-    if (navbarVisible) {
-      setNavbarVisible(false);
-    }
+    setNavbarVisible(false);
   };
 
+  useEffect(() => {
+    Animated.timing(navbarAnimation, {
+      toValue: navbarVisible ? 0 : -1000,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [navbarVisible]);
+  
+
   const handleGrupoPress = (grupoId: number) => {
-    setGrupoSelecionadoId(grupoId);
     navigation.navigate('DetalhesGrupo', { grupoId });
   };
 
   return (
     <>
-      <StatusBar hidden />
       <View style={styles.container}>
         <Image style={styles.background} source={require('../../../assets/images/Choco_GABI.svg')} />
         <View style={styles.header}>
@@ -88,28 +93,29 @@ const PaginaInicial = () => {
           </TouchableOpacity>
           <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
           <TouchableOpacity onPress={toggleNavbar}>
-            <MenuIcon />
+           <MenuIcon />
           </TouchableOpacity>
         </View>
         {navbarVisible && (
-          <TouchableOpacity style={styles.overlay} onPress={closeNavbar} />
+          <TouchableOpacity style={styles.overlay} onPress={() => setNavbarVisible(false)} />
         )}
-        {navbarVisible && (
-          <View style={[styles.navbar, { zIndex: 1 }]}>
-            <TouchableOpacity onPress={() => navigation.navigate('PerfilUsuario')}>
-              <Text style={styles.navItem}>Perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('PaginaInicial')}>
-              <Text style={styles.navItem}>Meus Grupos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Sobre')}>
-              <Text style={styles.navItem}>Sobre</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.popToTop()}>
-              <Text style={styles.navItem}>Sair</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Animated.View style={[styles.navbar, { transform: [{ translateY: navbarAnimation }] }]}>
+        <TouchableOpacity style={styles.navCloseBtn} onPress={closeNavbar}>
+            <Text style={styles.navCloseText}>X</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('PerfilUsuario')}>
+            <Text style={styles.navItem}>Perfil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('PaginaInicial')}>
+            <Text style={styles.navItem}>Meus Grupos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Sobre')}>
+            <Text style={styles.navItem}>Sobre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.popToTop()}>
+            <Text style={styles.navItem}>Sair</Text>
+          </TouchableOpacity>
+        </Animated.View>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <Text style={styles.welcomeText}>Bem-vindo(a)!</Text>
           {grupos.length === 0 && showNoGroupsMessage && (
@@ -198,25 +204,34 @@ const styles = StyleSheet.create({
     color: '#6D3415',
     fontSize: 18,
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+  },
   navbar: {
-    backgroundColor: 'rgba(255, 255, 255, 0.80)',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
     position: 'absolute',
-    top: 85,
+    top: 0,
     left: 0,
     right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    zIndex: 1,
   },
   navItem: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'Black',
+    color: 'black',
     marginVertical: 10,
     textAlign: 'center',
   },
   menuIcon: {
-    width: 24,
-    height: 24,
+    width: 30,
+    height: 30,
     tintColor: 'white',
   },
   button: {
@@ -227,15 +242,22 @@ const styles = StyleSheet.create({
     width: '80%',
     marginBottom: 10,
   },
+  navCloseBtn: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
+  navCloseText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'black',
+  },
   buttonText: {
     color: '#6D3415',
     fontWeight: 'bold',
     fontSize: 16,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-  },
+  
 });
 
 export default PaginaInicial;

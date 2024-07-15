@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, StatusBar, ScrollView, Animated } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackTypes } from '../../routes/stack';
@@ -8,12 +8,13 @@ const MenuIcon = () => (
   <View style={styles.menuIcon}>
     <Image
       source={require('../../../assets/images/MenuIcon.png')}
-      style={{ width: 30, height: 30 }} // Defina o tamanho do ícone conforme necessário
+      style={{ width: 30, height: 30 }}
     />
   </View>
 );
 
 const Sobre = () => {
+  const navbarAnimation = useRef(new Animated.Value(-1000)).current;
   const [navbarVisible, setNavbarVisible] = useState(false);
   const navigation = useNavigation<StackTypes>();
 
@@ -22,10 +23,16 @@ const Sobre = () => {
   };
 
   const closeNavbar = () => {
-    if (navbarVisible) {
-      setNavbarVisible(false);
-    }
+    setNavbarVisible(false);
   };
+
+  useEffect(() => {
+    Animated.timing(navbarAnimation, {
+      toValue: navbarVisible ? 0 : -1000,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [navbarVisible]);
 
   return (
     <>
@@ -42,24 +49,26 @@ const Sobre = () => {
           </TouchableOpacity>
         </View>
         {navbarVisible && (
-          <TouchableOpacity style={styles.overlay} onPress={closeNavbar} />
+          <TouchableOpacity style={styles.overlay} onPress={() => setNavbarVisible(false)} />
         )}
-        {navbarVisible && (
-          <View style={[styles.navbar, { zIndex: 1 }]}>
-            <TouchableOpacity onPress={() => navigation.navigate('PerfilUsuario')}>
-              <Text style={styles.navItem}>Perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('PaginaInicial')}>
-              <Text style={styles.navItem}>Meus Grupos</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Sobre')}>
-              <Text style={styles.navItem}>Sobre</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.popToTop()}>
-              <Text style={styles.navItem}>Sair</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <Animated.View style={[styles.navbar, { transform: [{ translateY: navbarAnimation }] }]}>
+        <TouchableOpacity style={styles.navCloseBtn} onPress={closeNavbar}>
+            <Text style={styles.navCloseText}>X</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('PerfilUsuario')}>
+            <Text style={styles.navItem}>Perfil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('PaginaInicial')}>
+            <Text style={styles.navItem}>Meus Grupos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Sobre')}>
+            <Text style={styles.navItem}>Sobre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.popToTop()}>
+            <Text style={styles.navItem}>Sair</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
         <View style={styles.formContainer}>
           <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <View style={styles.content}>
@@ -141,15 +150,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   navbar: {
-    backgroundColor: 'rgba(255, 255, 255, 0.80)',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
     position: 'absolute',
-    justifyContent: 'center',
-    top: 85,
+    top: 0,
     left: 0,
     right: 0,
-    alignItems: 'center', // This aligns items to the center horizontally
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    zIndex: 1,
   },
   navItem: {
     fontSize: 16,
@@ -157,6 +169,16 @@ const styles = StyleSheet.create({
     color: 'black',
     marginVertical: 10,
     textAlign: 'center',
+  },
+  navCloseBtn: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
+  navCloseText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'black',
   },
   menuIcon: {
     width: 24,

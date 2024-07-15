@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackTypes } from '../../routes/stack';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,8 +19,10 @@ const CriarGrupo = () => {
   const [dataRevelacao, setDataRevelacao] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [descricao, setDescricao] = useState<string>('');
+  const [navbarVisible, setNavbarVisible] = useState(false);
   const [grupoService, setGrupoService] = useState<GrupoService | null>(null);
   const [usuario, setUsuario] = useState<User | null>(null);
+  const navbarAnimation = useRef(new Animated.Value(-1000)).current;
 
   const navigation = useNavigation<StackTypes>();
   const userService = new UserService();
@@ -34,6 +36,14 @@ const CriarGrupo = () => {
     }
   }, []);
 
+  const MenuIcon = () => (
+    <View style={styles.menuIcon}>
+      <Image
+        source={require('../../../assets/images/MenuIcon.png')}
+        style={{ width: 30, height: 30 }}
+      />
+    </View>
+  );
   const salvarGrupo = async () => {
     if (!grupoService || !usuario) {
       console.error('Erro: serviço de grupo ou usuário não está disponível.');
@@ -101,18 +111,54 @@ const CriarGrupo = () => {
     setDataRevelacao(currentDate);
   };
 
+  const toggleNavbar = () => {
+    setNavbarVisible(!navbarVisible);
+  };
+
+  const closeNavbar = () => {
+    setNavbarVisible(false);
+  };
+
+  useEffect(() => {
+    Animated.timing(navbarAnimation, {
+      toValue: navbarVisible ? 0 : -1000,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [navbarVisible]);
+
   return (
     <View style={styles.container}>
       <Image style={styles.background} source={require('../../../assets/images/Choco_GABI.svg')} />
       <View style={styles.header}>
         <TouchableOpacity>
-          <Image style={styles.profileImageIcon} source={require('../../../assets/images/Icon.svg')} />
+          <Image style={styles.profileImageIconNavbar} source={require('../../../assets/images/Icon.svg')} />
         </TouchableOpacity>
         <Image style={styles.logo} source={require('../../../assets/images/Logo1.png')} />
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.headerText}>Voltar</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleNavbar}>
+            <MenuIcon/>
+          </TouchableOpacity>
       </View>
+      {navbarVisible && (
+          <TouchableOpacity style={styles.overlay} onPress={() => setNavbarVisible(false)} />
+        )}
+        <Animated.View style={[styles.navbar, { transform: [{ translateY: navbarAnimation }] }]}>
+        <TouchableOpacity style={styles.navCloseBtn} onPress={closeNavbar}>
+            <Text style={styles.navCloseText}>X</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('PerfilUsuario')}>
+            <Text style={styles.navItem}>Perfil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('PaginaInicial')}>
+            <Text style={styles.navItem}>Meus Grupos</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Sobre')}>
+            <Text style={styles.navItem}>Sobre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.popToTop()}>
+            <Text style={styles.navItem}>Sair</Text>
+          </TouchableOpacity>
+        </Animated.View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.welcomeText}>Criar Grupo</Text>
@@ -252,11 +298,56 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  profileImageIconNavbar: {
+    width: 90,
+    height: 90,
+    borderRadius: 40,
+  },
   profileImageIcon: {
     width: 100,
     height: 100,
     borderRadius: 50,
     marginBottom: 20,
+  },
+  navbar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    zIndex: 1,
+  },
+  navItem: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  navCloseBtn: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+  },
+  navCloseText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  menuIcon: {
+    width: 24,
+    height: 24,
+    tintColor: 'white',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
   },
 });
 

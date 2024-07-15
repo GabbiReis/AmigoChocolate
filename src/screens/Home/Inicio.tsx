@@ -4,8 +4,6 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'reac
 import { StackTypes } from '../../routes/stack';
 import { useNavigation } from '@react-navigation/native';
 import UserService   from '../../service/UserService/UserService';
-import { User } from '../../types/User';
-import { FlexContainer, FlexItem, FlexColumn, FlexGridColumn } from 'react-smart-flexbox';
 
 const Inicio = () => {
     const navigation = useNavigation<StackTypes>();
@@ -20,10 +18,6 @@ const Inicio = () => {
       
       
         <Text style={styles.title}>Bem vindo(a)</Text>
-
-        {/* <View>
-        <Text style={styles.registerContainer}>Prepare-se para uma experiência deliciosa de troca de presentes nesta temporada festiva. ChocoMigos é o seu destino para organizar e desfrutar de divertidos sorteios de Amigo Chocolate com amigos, familiares e colegas. Diga adeus ao estresse de organizar manualmente o sorteio e dar as boas-vindas à emoção e ao suspense!</Text>
-        </View> */}
  
         <TouchableOpacity style={styles.loginButton} >
           <Text style={styles.loginText} onPress={()=>{navigation.navigate('Login')}}>Começar Agora</Text>
@@ -84,6 +78,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '60%',
     marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
   },
   loginText: {
     color: 'white',
