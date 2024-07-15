@@ -1,7 +1,11 @@
 
-# ChocoMigos
+# ChocoMigos 
 
-![icon-chocomigos](https://github.com/GabbiReis/AmigoChocolate/blob/main/assets/images/Icon.svg)  ![logo-chocomigos](https://github.com/GabbiReis/AmigoChocolate/blob/main/assets/images/Logo1.png)
+<div align="center">
+    
+![logo-chocomigos](https://github.com/GabbiReis/AmigoChocolate/blob/main/assets/images/Logo1.png)
+
+</div>
 
 ChocoMigos é um aplicativo mobile desenvolvido para um trabalho do 5º período do curso de Sistemas de Informação. O objetivo do aplicativo é realizar o sorteio de amigo chocolate, facilitando a organização desse evento divertido.
 
@@ -55,7 +59,12 @@ Isso abrirá uma página no navegador onde você poderá escanear o QR code com 
 - **Criação de Grupos:** Os usuários podem criar grupos para o sorteio.
 - **Sorteio de Amigo Chocolate:** Realiza o sorteio entre os membros do grupo.
 - **Outras Funcionalidades:** Várias outras funcionalidades para melhorar a experiência do usuário.
-
+  
+<div align="center">
+    
+  ![icon-chocomigos](https://github.com/GabbiReis/AmigoChocolate/blob/main/assets/images/Icon.svg)
+  
+</div>
 
 ## Licença
 
