@@ -51,6 +51,24 @@ expo start
 
 Isso abrirá uma página no navegador onde você poderá escanear o QR code com o aplicativo Expo Go no seu dispositivo móvel, ou iniciar um emulador.
 
+## Execução do Dockerfile
+
+Para rodar a API utilizando Docker, siga os passos abaixo:
+
+1. Certifique-se de ter o Docker instalado na sua máquina.
+
+2. No diretório raiz do projeto, construa a imagem Docker:
+    ```bash
+    docker build -t chocomigos-api .
+    ```
+
+3. Após a construção da imagem, inicie um container a partir dela:
+    ```bash
+    docker run -d -p 3000:3000 chocomigos-api
+    ```
+
+4. A API estará rodando e acessível em `http://localhost:3000`.
+
 ## Funcionalidades
 
 - **Login:** Permite que os usuários façam login na aplicação.
@@ -58,7 +76,7 @@ Isso abrirá uma página no navegador onde você poderá escanear o QR code com 
 - **Recuperação de Senha:** Permite a recuperação de senhas esquecidas.
 - **Criação de Grupos:** Os usuários podem criar grupos para o sorteio.
 - **Sorteio de Amigo Chocolate:** Realiza o sorteio entre os membros do grupo.
-- **Outras Funcionalidades:** Várias outras funcionalidades para melhorar a experiência do usuário.
+- **Outras Funcionalidades:** Para melhorar a experiência do usuário.
   
 <div align="center">
     
