@@ -87,4 +87,4 @@ Para rodar a API utilizando Docker, siga os passos abaixo:
 
 ## Licença
 
-Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a licença MIT.
