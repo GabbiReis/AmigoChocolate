@@ -47,10 +47,10 @@ Para configurar o ambiente de desenvolvimento, siga estas etapas:
 Para iniciar a aplicação no ambiente de desenvolvimento, execute:
 
 ```bash
-expo start
+npx expo start
 ```
 
-Isso abrirá uma página no navegador onde você poderá escanear o QR code com o aplicativo Expo Go no seu dispositivo móvel, ou iniciar um emulador.
+Isso abrirá no terminal uma lista de opções onde você poderá escanear o QR code com o aplicativo Expo Go no seu dispositivo móvel, iniciar um emulador ou usar a versão web.
 
 ## Execução do Dockerfile
 
