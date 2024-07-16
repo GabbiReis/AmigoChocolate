@@ -34,12 +34,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   imageBackground: {
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    // flex: 1,
-    // resizeMode: 'cover',
     width: '100%',
-    // alignItems: 'center',
     height: '100%',
     position: 'absolute'
   },
